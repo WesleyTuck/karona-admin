@@ -15,6 +15,8 @@ import {
   MapPin,
   CreditCard,
   Calendar,
+  Copy,
+  Check,
 } from "lucide-react";
 
 function fmt(v: number) {
@@ -32,12 +34,60 @@ function fmtDate(d: string | null) {
   });
 }
 
-function InfoRow({ label, value }: { label: string; value: React.ReactNode }) {
+function InfoRow({
+  label,
+  value,
+  stacked = false,
+}: {
+  label: string;
+  value: React.ReactNode;
+  stacked?: boolean;
+}) {
+  if (stacked) {
+    return (
+      <div className="py-2.5 border-b border-slate-100 last:border-0 space-y-0.5">
+        <p className="text-sm text-slate-500">{label}</p>
+        <div className="text-sm font-medium text-slate-800">{value}</div>
+      </div>
+    );
+  }
   return (
-    <div className="flex justify-between py-2.5 border-b border-slate-100 last:border-0">
-      <span className="text-sm text-slate-500">{label}</span>
-      <span className="text-sm font-medium text-slate-800 text-right max-w-xs">{value}</span>
+    <div className="flex justify-between items-start gap-4 py-2.5 border-b border-slate-100 last:border-0">
+      <span className="text-sm text-slate-500 shrink-0">{label}</span>
+      <span className="text-sm font-medium text-slate-800 text-right">{value}</span>
     </div>
+  );
+}
+
+function PixKeyValue({ pixKey, pixKeyType }: { pixKey: string | null; pixKeyType: string | null }) {
+  const [copied, setCopied] = useState(false);
+
+  function handleCopy() {
+    if (!pixKey) return;
+    navigator.clipboard.writeText(pixKey).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    });
+  }
+
+  return (
+    <span className="flex items-center gap-1.5 flex-wrap">
+      <CreditCard size={12} className="text-slate-400 shrink-0" />
+      <span className="font-mono text-xs break-all">{pixKey ?? "—"}</span>
+      {pixKeyType && (
+        <span className="text-xs text-slate-400 shrink-0">({pixKeyType})</span>
+      )}
+      {pixKey && (
+        <button
+          type="button"
+          onClick={handleCopy}
+          title="Copiar chave Pix"
+          className="shrink-0 text-slate-400 hover:text-blue-600 transition-colors"
+        >
+          {copied ? <Check size={13} className="text-emerald-500" /> : <Copy size={13} />}
+        </button>
+      )}
+    </span>
   );
 }
 
@@ -182,10 +232,10 @@ export default function ConfirmPayoutForm({ payoutId }: { payoutId: string }) {
         <InfoRow label="Passageiro" value={
           payout.passengerNameSnapshot ?? payout.trip?.passenger?.name ?? "—"
         } />
-        <InfoRow label="Rota" value={
-          <span className="flex items-center gap-1">
-            <MapPin size={12} className="text-slate-400" />
-            {payout.originSnapshot ?? payout.trip?.origin ?? "—"} → {payout.destinationSnapshot ?? payout.trip?.destination ?? "—"}
+        <InfoRow label="Rota" stacked value={
+          <span className="flex items-center gap-1.5 flex-wrap">
+            <MapPin size={12} className="text-slate-400 shrink-0" />
+            <span>{payout.originSnapshot ?? payout.trip?.origin ?? "—"} → {payout.destinationSnapshot ?? payout.trip?.destination ?? "—"}</span>
           </span>
         } />
         <InfoRow label="Data do Pagamento" value={
@@ -194,14 +244,8 @@ export default function ConfirmPayoutForm({ payoutId }: { payoutId: string }) {
             {fmtDate(payout.paymentConfirmedAt)}
           </span>
         } />
-        <InfoRow label="Chave Pix" value={
-          <span className="flex items-center gap-1">
-            <CreditCard size={12} className="text-slate-400" />
-            <span className="font-mono text-xs">{payout.pixKeySnapshot ?? "—"}</span>
-            {payout.pixKeyTypeSnapshot && (
-              <span className="text-xs text-slate-400">({payout.pixKeyTypeSnapshot})</span>
-            )}
-          </span>
+        <InfoRow label="Chave Pix" stacked value={
+          <PixKeyValue pixKey={payout.pixKeySnapshot} pixKeyType={payout.pixKeyTypeSnapshot} />
         } />
         <InfoRow label="Valor Bruto" value={fmt(payout.grossAmount)} />
         <InfoRow label={`Taxa (${payout.feePercent}%)`} value={
