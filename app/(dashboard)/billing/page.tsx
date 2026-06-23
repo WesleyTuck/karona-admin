@@ -170,8 +170,7 @@ export default function BillingPage() {
 
     const params = new URLSearchParams({ page: String(page), limit: "20" });
     if (tab === "pending") {
-      params.append("status", "PENDING");
-      params.append("status", "FAILED");
+      params.set("status", "PENDING");
     } else if (statusFilter) {
       params.set("status", statusFilter);
     }
