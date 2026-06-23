@@ -168,9 +168,13 @@ export default function BillingPage() {
     setLoading(true);
     setError("");
 
-    const status = tab === "pending" ? "PENDING" : statusFilter || undefined;
     const params = new URLSearchParams({ page: String(page), limit: "20" });
-    if (status) params.set("status", status);
+    if (tab === "pending") {
+      params.append("status", "PENDING");
+      params.append("status", "FAILED");
+    } else if (statusFilter) {
+      params.set("status", statusFilter);
+    }
 
     api
       .get<PayoutsResponse>(`/admin/payouts?${params}`)
@@ -188,7 +192,7 @@ export default function BillingPage() {
   }, [load]);
 
   const items = data?.items ?? [];
-  const pendingTotal = items.reduce((s, p) => (p.status === "PENDING" ? s + p.netAmount : s), 0);
+  const pendingTotal = items.reduce((s, p) => (p.status !== "PAID" ? s + p.netAmount : s), 0);
 
   return (
     <div className="p-8">
