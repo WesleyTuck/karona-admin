@@ -3,11 +3,12 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { clearToken } from "@/lib/api";
-import { LayoutDashboard, Receipt, LogOut, MapPin } from "lucide-react";
+import { LayoutDashboard, Receipt, LogOut, MapPin, ShieldCheck } from "lucide-react";
 
 const NAV = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { href: "/billing", label: "Faturamento", icon: Receipt },
+  { href: "/verificacoes", label: "Verificações", icon: ShieldCheck },
 ];
 
 export default function Sidebar() {

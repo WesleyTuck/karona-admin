@@ -100,3 +100,35 @@ export interface PayoutsResponse {
   pages: number;
   items: DriverPayout[];
 }
+
+export type DriverVerificationStatus = "PENDING_VALIDATION" | "UNDER_REVIEW" | "VERIFIED";
+
+export interface DriverVerification {
+  id: string;
+  userId: string;
+  cnh: string;
+  verified: boolean;
+  verificationStatus: DriverVerificationStatus;
+  cnhPhotoUrl: string | null;
+  selfiePhotoUrl: string | null;
+  vehicleModel: string;
+  vehiclePlate: string;
+  vehicleColor: string;
+  seats: number;
+  totalEarnings: number;
+  acceptanceRate: number;
+  createdAt: string;
+  updatedAt: string;
+  user: {
+    id: string;
+    name: string;
+    email: string;
+    phone: string;
+    cpf: string | null;
+    rating: number;
+    totalTrips: number;
+    createdAt: string;
+  };
+  cnhSignedUrl?: string | null;
+  selfieSignedUrl?: string | null;
+}
