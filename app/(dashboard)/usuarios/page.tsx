@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { api, hasPermission, type AdminUserItem, type AdminUsersResponse } from "@/lib/api";
+import { api, type AdminUserItem, type AdminUsersResponse } from "@/lib/api";
 import {
   Users,
   Loader2,
@@ -9,8 +9,8 @@ import {
   ChevronLeft,
   ChevronRight,
   Search,
-  ShieldOff,
 } from "lucide-react";
+import AccessGuard from "@/components/access-guard";
 
 const PERMISSION_LABELS: Record<string, string> = {
   MANAGE_USERS: "Usuários",
@@ -35,17 +35,12 @@ function fmtDate(d: string) {
   });
 }
 
-export default function UsuariosPage() {
-  const [allowed, setAllowed] = useState<boolean | null>(null);
+function UsuariosContent() {
   const [data, setData] = useState<AdminUsersResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState("");
-
-  useEffect(() => {
-    setAllowed(hasPermission("MANAGE_USERS"));
-  }, []);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -62,9 +57,7 @@ export default function UsuariosPage() {
     }
   }, [page, search]);
 
-  useEffect(() => {
-    if (allowed) load();
-  }, [load, allowed]);
+  useEffect(() => { load(); }, [load]);
 
   function handleSearchChange(e: React.ChangeEvent<HTMLInputElement>) {
     setSearch(e.target.value);
@@ -73,33 +66,13 @@ export default function UsuariosPage() {
 
   const items = data?.items ?? [];
 
-  if (allowed === null) {
-    return (
-      <div className="flex items-center justify-center py-20">
-        <Loader2 className="animate-spin text-slate-400" size={32} />
-      </div>
-    );
-  }
-
-  if (!allowed) {
-    return (
-      <div className="flex flex-col items-center justify-center py-32 text-slate-400">
-        <ShieldOff size={48} className="mb-4" />
-        <p className="text-lg font-semibold text-slate-600">Acesso negado</p>
-        <p className="text-sm mt-1">Você não tem permissão para acessar esta página.</p>
-      </div>
-    );
-  }
-
   return (
     <div className="p-8">
-      {/* Header */}
       <div className="mb-6">
         <h1 className="text-2xl font-bold text-slate-800">Administradores</h1>
         <p className="text-slate-500 text-sm mt-1">Usuários com acesso ao painel administrativo</p>
       </div>
 
-      {/* Search */}
       <div className="mb-5">
         <div className="relative max-w-xs">
           <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
@@ -139,13 +112,9 @@ export default function UsuariosPage() {
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-slate-100 bg-slate-50">
-                  <th className="text-left px-5 py-3 text-slate-500 font-semibold">
-                    Administrador
-                  </th>
+                  <th className="text-left px-5 py-3 text-slate-500 font-semibold">Administrador</th>
                   <th className="text-left px-5 py-3 text-slate-500 font-semibold">Permissões</th>
-                  <th className="text-left px-5 py-3 text-slate-500 font-semibold">
-                    Cadastrado em
-                  </th>
+                  <th className="text-left px-5 py-3 text-slate-500 font-semibold">Cadastrado em</th>
                 </tr>
               </thead>
               <tbody>
@@ -206,5 +175,13 @@ export default function UsuariosPage() {
         </>
       )}
     </div>
+  );
+}
+
+export default function UsuariosPage() {
+  return (
+    <AccessGuard permission="MANAGE_USERS">
+      <UsuariosContent />
+    </AccessGuard>
   );
 }

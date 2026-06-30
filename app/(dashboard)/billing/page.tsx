@@ -14,6 +14,7 @@ import {
   ChevronRight,
   ArrowRight,
 } from "lucide-react";
+import AccessGuard from "@/components/access-guard";
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -154,9 +155,9 @@ function PayoutRow({ payout, showActions }: { payout: DriverPayout; showActions:
 
 type Tab = "pending" | "history";
 
-// ─── Page ─────────────────────────────────────────────────────────────────────
+// ─── Content ──────────────────────────────────────────────────────────────────
 
-export default function BillingPage() {
+function BillingContent() {
   const [tab, setTab] = useState<Tab>("pending");
   const [data, setData] = useState<PayoutsResponse | null>(null);
   const [loading, setLoading] = useState(true);
@@ -195,7 +196,6 @@ export default function BillingPage() {
 
   return (
     <div className="p-8">
-      {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div>
           <h1 className="text-2xl font-bold text-slate-800">Faturamento</h1>
@@ -203,7 +203,6 @@ export default function BillingPage() {
         </div>
       </div>
 
-      {/* Tabs */}
       <div className="flex gap-1 border-b border-slate-200 mb-6">
         {(["pending", "history"] as Tab[]).map((t) => (
           <button
@@ -220,7 +219,6 @@ export default function BillingPage() {
         ))}
       </div>
 
-      {/* Controls */}
       <div className="flex items-center justify-between mb-4 gap-4 flex-wrap">
         <div className="flex items-center gap-3">
           {tab === "history" && (
@@ -254,7 +252,6 @@ export default function BillingPage() {
         )}
       </div>
 
-      {/* Content */}
       <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
         {loading && (
           <div className="flex items-center justify-center py-16">
@@ -304,7 +301,6 @@ export default function BillingPage() {
         )}
       </div>
 
-      {/* Pagination */}
       {data && data.pages > 1 && (
         <div className="flex items-center justify-between mt-4 text-sm text-slate-500">
           <p>
@@ -329,5 +325,15 @@ export default function BillingPage() {
         </div>
       )}
     </div>
+  );
+}
+
+// ─── Page ─────────────────────────────────────────────────────────────────────
+
+export default function BillingPage() {
+  return (
+    <AccessGuard permission="MANAGE_PAYOUTS">
+      <BillingContent />
+    </AccessGuard>
   );
 }

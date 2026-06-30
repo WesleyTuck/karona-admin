@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 import { api, type DriverVerification, type DriverVerificationStatus } from "@/lib/api";
 import { ShieldCheck, ShieldAlert, Clock, ChevronRight, Loader2, AlertCircle } from "lucide-react";
+import AccessGuard from "@/components/access-guard";
 
 function StatusBadge({ status }: { status: DriverVerificationStatus }) {
   if (status === "VERIFIED") {
@@ -35,7 +36,7 @@ function fmtDate(d: string) {
   });
 }
 
-export default function VerificacoesPage() {
+function VerificacoesContent() {
   const [items, setItems] = useState<DriverVerification[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -126,5 +127,13 @@ export default function VerificacoesPage() {
         </div>
       )}
     </div>
+  );
+}
+
+export default function VerificacoesPage() {
+  return (
+    <AccessGuard permission="MANAGE_VERIFICATIONS">
+      <VerificacoesContent />
+    </AccessGuard>
   );
 }
