@@ -116,7 +116,7 @@ export default function VerificacaoDetailPage({ params }: { params: Promise<{ id
           </div>
           <dl className="grid grid-cols-2 gap-4">
             <Field label="Nome" value={driver.user.name} />
-            <Field label="CPF" value={driver.user.cpf} />
+            <Field label="CPF" value={driver.cpf} />
             <Field label="E-mail" value={driver.user.email} />
             <Field label="Telefone" value={driver.user.phone} />
             <Field label="Cadastrado em" value={fmtDate(driver.user.createdAt)} />

@@ -107,6 +107,7 @@ export interface DriverVerification {
   id: string;
   userId: string;
   cnh: string;
+  cpf: string | null;
   verified: boolean;
   verificationStatus: DriverVerificationStatus;
   cnhPhotoUrl: string | null;
