@@ -135,6 +135,13 @@ export interface AdminUsersResponse {
   items: AdminUserItem[];
 }
 
+export interface CreateAdminUserPayload {
+  name: string;
+  email: string;
+  password: string;
+  permissions: string[];
+}
+
 export type DriverVerificationStatus = "PENDING_VALIDATION" | "UNDER_REVIEW" | "VERIFIED";
 
 export interface DriverVerification {

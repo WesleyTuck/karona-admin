@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import Link from "next/link";
 import { api, type AdminUserItem, type AdminUsersResponse } from "@/lib/api";
 import {
   Users,
@@ -9,6 +10,7 @@ import {
   ChevronLeft,
   ChevronRight,
   Search,
+  Plus,
 } from "lucide-react";
 import AccessGuard from "@/components/access-guard";
 
@@ -68,9 +70,18 @@ function UsuariosContent() {
 
   return (
     <div className="p-8">
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold text-slate-800">Administradores</h1>
-        <p className="text-slate-500 text-sm mt-1">Usuários com acesso ao painel administrativo</p>
+      <div className="flex items-center justify-between mb-6">
+        <div>
+          <h1 className="text-2xl font-bold text-slate-800">Administradores</h1>
+          <p className="text-slate-500 text-sm mt-1">Usuários com acesso ao painel administrativo</p>
+        </div>
+        <Link
+          href="/usuarios/novo"
+          className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2.5 rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors"
+        >
+          <Plus size={16} />
+          Novo administrador
+        </Link>
       </div>
 
       <div className="mb-5">
