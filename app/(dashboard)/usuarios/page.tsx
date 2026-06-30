@@ -6,6 +6,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import {
   api,
+  hasPermission,
   type AppUser,
   type UsersResponse,
   type UserRole,
@@ -20,6 +21,7 @@ import {
   ChevronLeft,
   ChevronRight,
   Search,
+  ShieldOff,
 } from "lucide-react";
 
 // ─── Schema ──────────────────────────────────────────────────────────────────
@@ -196,6 +198,7 @@ function RegisterModal({
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
 export default function UsuariosPage() {
+  const [allowed, setAllowed] = useState<boolean | null>(null);
   const [data, setData] = useState<UsersResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -203,6 +206,10 @@ export default function UsuariosPage() {
   const [search, setSearch] = useState("");
   const [roleFilter, setRoleFilter] = useState<UserRole | "">("");
   const [showModal, setShowModal] = useState(false);
+
+  useEffect(() => {
+    setAllowed(hasPermission("MANAGE_USERS"));
+  }, []);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -240,6 +247,24 @@ export default function UsuariosPage() {
   }
 
   const items = data?.items ?? [];
+
+  if (allowed === null) {
+    return (
+      <div className="flex items-center justify-center py-20">
+        <Loader2 className="animate-spin text-slate-400" size={32} />
+      </div>
+    );
+  }
+
+  if (!allowed) {
+    return (
+      <div className="flex flex-col items-center justify-center py-32 text-slate-400">
+        <ShieldOff size={48} className="mb-4" />
+        <p className="text-lg font-semibold text-slate-600">Acesso negado</p>
+        <p className="text-sm mt-1">Você não tem permissão para acessar esta página.</p>
+      </div>
+    );
+  }
 
   return (
     <>

@@ -2,24 +2,34 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { clearToken } from "@/lib/api";
+import { useEffect, useState } from "react";
+import { clearToken, getPermissions } from "@/lib/api";
 import { LayoutDashboard, Receipt, LogOut, MapPin, ShieldCheck, Users } from "lucide-react";
 
 const NAV = [
-  { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/billing", label: "Faturamento", icon: Receipt },
-  { href: "/verificacoes", label: "Verificações", icon: ShieldCheck },
-  { href: "/usuarios", label: "Usuários", icon: Users },
+  { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard, permission: null },
+  { href: "/billing", label: "Faturamento", icon: Receipt, permission: null },
+  { href: "/verificacoes", label: "Verificações", icon: ShieldCheck, permission: null },
+  { href: "/usuarios", label: "Usuários", icon: Users, permission: "MANAGE_USERS" },
 ];
 
 export default function Sidebar() {
   const pathname = usePathname();
   const router = useRouter();
+  const [permissions, setPermissions] = useState<string[]>([]);
+
+  useEffect(() => {
+    setPermissions(getPermissions());
+  }, []);
 
   function logout() {
     clearToken();
     router.push("/login");
   }
+
+  const visibleNav = NAV.filter(
+    ({ permission }) => permission === null || permissions.includes(permission),
+  );
 
   return (
     <aside className="flex flex-col w-60 min-h-screen bg-slate-800 text-slate-100">
@@ -33,7 +43,7 @@ export default function Sidebar() {
 
       {/* Nav */}
       <nav className="flex-1 px-3 py-4 space-y-1">
-        {NAV.map(({ href, label, icon: Icon }) => {
+        {visibleNav.map(({ href, label, icon: Icon }) => {
           const active = pathname === href || pathname.startsWith(href + "/");
           return (
             <Link

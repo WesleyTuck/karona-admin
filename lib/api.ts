@@ -11,6 +11,24 @@ export function setToken(token: string) {
 
 export function clearToken() {
   localStorage.removeItem("admin_token");
+  localStorage.removeItem("admin_permissions");
+}
+
+export function setPermissions(permissions: string[]) {
+  localStorage.setItem("admin_permissions", JSON.stringify(permissions));
+}
+
+export function getPermissions(): string[] {
+  if (typeof window === "undefined") return [];
+  try {
+    return JSON.parse(localStorage.getItem("admin_permissions") ?? "[]");
+  } catch {
+    return [];
+  }
+}
+
+export function hasPermission(permission: string): boolean {
+  return getPermissions().includes(permission);
 }
 
 async function request<T>(path: string, init: RequestInit = {}): Promise<T> {

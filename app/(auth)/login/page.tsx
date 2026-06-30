@@ -5,7 +5,7 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { api, setToken } from "@/lib/api";
+import { api, setToken, setPermissions } from "@/lib/api";
 import { MapPin, Loader2 } from "lucide-react";
 
 const schema = z.object({
@@ -28,8 +28,12 @@ export default function LoginPage() {
   async function onSubmit(data: FormData) {
     setError("");
     try {
-      const res = await api.post<{ access_token: string }>("/admin/auth/login", data);
+      const res = await api.post<{ access_token: string; permissions: string[] }>(
+        "/admin/auth/login",
+        data,
+      );
       setToken(res.access_token);
+      setPermissions(res.permissions ?? []);
       router.push("/dashboard");
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : "Erro ao entrar");
