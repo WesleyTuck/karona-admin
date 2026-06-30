@@ -119,25 +119,20 @@ export interface PayoutsResponse {
   items: DriverPayout[];
 }
 
-export type UserRole = "PASSENGER" | "DRIVER";
-
-export interface AppUser {
+export interface AdminUserItem {
   id: string;
   name: string;
   email: string;
-  phone: string;
-  role: UserRole;
-  rating: number;
-  totalTrips: number;
+  permissions: string[];
   createdAt: string;
 }
 
-export interface UsersResponse {
+export interface AdminUsersResponse {
   total: number;
   page: number;
   limit: number;
   pages: number;
-  items: AppUser[];
+  items: AdminUserItem[];
 }
 
 export type DriverVerificationStatus = "PENDING_VALIDATION" | "UNDER_REVIEW" | "VERIFIED";
