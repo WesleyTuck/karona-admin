@@ -71,8 +71,6 @@ export const api = {
 
   patchForm: <T>(path: string, form: FormData) =>
     request<T>(path, { method: "PATCH", body: form }),
-
-  delete: <T>(path: string) => request<T>(path, { method: "DELETE" }),
 };
 
 // ─── Types ───────────────────────────────────────────────────────────────────
@@ -140,14 +138,6 @@ export interface UsersResponse {
   limit: number;
   pages: number;
   items: AppUser[];
-}
-
-export interface CreateUserPayload {
-  name: string;
-  email: string;
-  phone: string;
-  password: string;
-  role: UserRole;
 }
 
 export type DriverVerificationStatus = "PENDING_VALIDATION" | "UNDER_REVIEW" | "VERIFIED";
