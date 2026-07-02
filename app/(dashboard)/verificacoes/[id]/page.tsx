@@ -15,6 +15,9 @@ import {
   User,
   Car,
   Star,
+  Maximize2,
+  ExternalLink,
+  X,
 } from "lucide-react";
 
 function Field({ label, value }: { label: string; value: React.ReactNode }) {
@@ -36,6 +39,124 @@ function StatusBadge({ status }: { status: string }) {
 
 function fmtDate(d: string) {
   return new Date(d).toLocaleString("pt-BR", { day: "2-digit", month: "2-digit", year: "numeric" });
+}
+
+function isPdf(url: string) {
+  return url.split("?")[0].toLowerCase().endsWith(".pdf");
+}
+
+function Lightbox({ url, onClose }: { url: string; onClose: () => void }) {
+  useEffect(() => {
+    function onKey(e: KeyboardEvent) {
+      if (e.key === "Escape") onClose();
+    }
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [onClose]);
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm"
+      onClick={onClose}
+    >
+      <div className="relative max-w-5xl max-h-[90vh] w-full mx-4" onClick={(e) => e.stopPropagation()}>
+        <div className="absolute -top-10 right-0 flex items-center gap-2">
+          <a
+            href={url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-1.5 text-white/80 hover:text-white text-xs font-medium"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <ExternalLink size={14} /> Abrir em nova aba
+          </a>
+          <button
+            onClick={onClose}
+            className="ml-2 text-white/70 hover:text-white transition-colors"
+            aria-label="Fechar"
+          >
+            <X size={22} />
+          </button>
+        </div>
+        <img
+          src={url}
+          alt="Visualização completa"
+          className="w-full max-h-[90vh] object-contain rounded-lg"
+        />
+      </div>
+    </div>
+  );
+}
+
+function DocCard({ title, url }: { title: string; url: string | null | undefined }) {
+  const [expanded, setExpanded] = useState(false);
+
+  if (!url) {
+    return (
+      <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+        <p className="text-sm font-semibold text-slate-600 mb-3">{title}</p>
+        <div className="flex items-center justify-center h-40 bg-slate-50 rounded-lg text-slate-400 text-sm">
+          Nenhuma foto enviada
+        </div>
+      </div>
+    );
+  }
+
+  const pdf = isPdf(url);
+
+  return (
+    <>
+      <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+        <div className="flex items-center justify-between mb-3">
+          <p className="text-sm font-semibold text-slate-600">{title}</p>
+          <div className="flex items-center gap-2">
+            <a
+              href={url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1 text-xs text-slate-500 hover:text-slate-700 transition-colors"
+              title="Abrir em nova aba"
+            >
+              <ExternalLink size={14} />
+            </a>
+            {!pdf && (
+              <button
+                onClick={() => setExpanded(true)}
+                className="inline-flex items-center gap-1 text-xs text-slate-500 hover:text-slate-700 transition-colors"
+                title="Expandir"
+              >
+                <Maximize2 size={14} />
+              </button>
+            )}
+          </div>
+        </div>
+
+        {pdf ? (
+          <a
+            href={url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center justify-center h-40 bg-slate-50 rounded-lg text-blue-600 hover:text-blue-700 hover:bg-slate-100 transition-colors gap-2 text-sm font-medium border border-dashed border-slate-300"
+          >
+            <ExternalLink size={16} /> Abrir PDF em nova aba
+          </a>
+        ) : (
+          <button
+            onClick={() => setExpanded(true)}
+            className="w-full focus:outline-none group"
+          >
+            <img
+              src={url}
+              alt={title}
+              className="w-full rounded-lg object-cover max-h-64 group-hover:opacity-90 transition-opacity cursor-zoom-in"
+            />
+          </button>
+        )}
+      </div>
+
+      {expanded && <Lightbox url={url} onClose={() => setExpanded(false)} />}
+    </>
+  );
 }
 
 export default function VerificacaoDetailPage({ params }: { params: Promise<{ id: string }> }) {
@@ -147,35 +268,8 @@ export default function VerificacaoDetailPage({ params }: { params: Promise<{ id
 
       {/* Photos */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
-        <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
-          <p className="text-sm font-semibold text-slate-600 mb-3">Foto da CNH</p>
-          {driver.cnhSignedUrl ? (
-            <img
-              src={driver.cnhSignedUrl}
-              alt="CNH do motorista"
-              className="w-full rounded-lg object-cover max-h-64"
-            />
-          ) : (
-            <div className="flex items-center justify-center h-40 bg-slate-50 rounded-lg text-slate-400 text-sm">
-              Nenhuma foto enviada
-            </div>
-          )}
-        </div>
-
-        <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
-          <p className="text-sm font-semibold text-slate-600 mb-3">Selfie</p>
-          {driver.selfieSignedUrl ? (
-            <img
-              src={driver.selfieSignedUrl}
-              alt="Selfie do motorista"
-              className="w-full rounded-lg object-cover max-h-64"
-            />
-          ) : (
-            <div className="flex items-center justify-center h-40 bg-slate-50 rounded-lg text-slate-400 text-sm">
-              Nenhuma foto enviada
-            </div>
-          )}
-        </div>
+        <DocCard title="Foto da CNH" url={driver.cnhSignedUrl} />
+        <DocCard title="Selfie" url={driver.selfieSignedUrl} />
       </div>
 
       {/* Approve button */}
