@@ -90,7 +90,6 @@ function VerificacoesContent() {
             <thead>
               <tr className="border-b border-slate-100 bg-slate-50">
                 <th className="text-left px-5 py-3 text-slate-500 font-semibold">Motorista</th>
-                <th className="text-left px-5 py-3 text-slate-500 font-semibold">CNH</th>
                 <th className="text-left px-5 py-3 text-slate-500 font-semibold">Veículo</th>
                 <th className="text-left px-5 py-3 text-slate-500 font-semibold">Cadastrado em</th>
                 <th className="text-left px-5 py-3 text-slate-500 font-semibold">Status</th>
@@ -104,7 +103,6 @@ function VerificacoesContent() {
                     <div className="font-semibold text-slate-800">{item.user.name}</div>
                     <div className="text-slate-400 text-xs">{item.user.email}</div>
                   </td>
-                  <td className="px-5 py-4 text-slate-600 font-mono text-xs">{item.cnh}</td>
                   <td className="px-5 py-4 text-slate-600">
                     {item.vehicleModel} · {item.vehiclePlate}
                   </td>

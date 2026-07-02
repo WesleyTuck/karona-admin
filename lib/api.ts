@@ -147,7 +147,6 @@ export type DriverVerificationStatus = "PENDING_VALIDATION" | "UNDER_REVIEW" | "
 export interface DriverVerification {
   id: string;
   userId: string;
-  cnh: string;
   cpf: string | null;
   verified: boolean;
   verificationStatus: DriverVerificationStatus;

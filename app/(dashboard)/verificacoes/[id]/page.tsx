@@ -253,10 +253,9 @@ export default function VerificacaoDetailPage({ params }: { params: Promise<{ id
         {/* Vehicle info */}
         <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
           <div className="flex items-center gap-2 mb-4 text-slate-600 font-semibold">
-            <Car size={16} /> Veículo e habilitação
+            <Car size={16} /> Veículo
           </div>
           <dl className="grid grid-cols-2 gap-4">
-            <Field label="CNH" value={<span className="font-mono">{driver.cnh}</span>} />
             <Field label="Modelo" value={driver.vehicleModel} />
             <Field label="Placa" value={<span className="font-mono">{driver.vehiclePlate}</span>} />
             <Field label="Cor" value={driver.vehicleColor} />
