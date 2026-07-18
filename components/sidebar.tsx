@@ -4,13 +4,14 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { clearToken, getPermissions } from "@/lib/api";
-import { LayoutDashboard, Receipt, LogOut, MapPin, ShieldCheck, Users } from "lucide-react";
+import { LayoutDashboard, Receipt, LogOut, MapPin, ShieldCheck, Users, Settings } from "lucide-react";
 
 const NAV = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard, permission: null },
   { href: "/billing", label: "Faturamento", icon: Receipt, permission: "MANAGE_PAYOUTS" },
   { href: "/verificacoes", label: "Verificações", icon: ShieldCheck, permission: "MANAGE_VERIFICATIONS" },
   { href: "/usuarios", label: "Usuários", icon: Users, permission: "MANAGE_USERS" },
+  { href: "/configuracoes", label: "Configurações", icon: Settings, permission: "MANAGE_SETTINGS" },
 ];
 
 export default function Sidebar() {

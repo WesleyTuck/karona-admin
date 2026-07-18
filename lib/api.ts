@@ -173,3 +173,18 @@ export interface DriverVerification {
   cnhSignedUrl?: string | null;
   selfieSignedUrl?: string | null;
 }
+
+export interface PlatformFinancialSettings {
+  commissionPercent: number;
+  pixGatewayFeePercent: number;
+  withdrawFee: number;
+  minimumWithdrawAmount: number;
+  freeWithdrawsPerDay: number;
+  updatedAt: string;
+  updatedByAdminEmail: string | null;
+}
+
+export type UpdateFinancialSettingsPayload = Omit<
+  PlatformFinancialSettings,
+  "updatedAt" | "updatedByAdminEmail"
+>;
