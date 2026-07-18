@@ -14,6 +14,7 @@ const schema = z.object({
   withdrawFee: z.coerce.number().min(0, "Não pode ser negativo"),
   minimumWithdrawAmount: z.coerce.number().min(0, "Não pode ser negativo"),
   freeWithdrawsPerDay: z.coerce.number().int("Deve ser um número inteiro").min(0, "Não pode ser negativo"),
+  activePaymentGateway: z.enum(["PAGARME", "WOOVI"]),
 });
 
 type FormInput = z.input<typeof schema>;
@@ -117,6 +118,22 @@ function ConfiguracoesContent() {
       >
         <div>
           <label className={labelClass}>
+            Gateway de pagamento <span className={hintClass}>(usado para novas cobranças Pix e novos saques)</span>
+          </label>
+          <select {...register("activePaymentGateway")} className={inputClass}>
+            <option value="PAGARME">Pagar.me</option>
+            <option value="WOOVI">Woovi</option>
+          </select>
+          {errors.activePaymentGateway && (
+            <p className={errorClass}>{errors.activePaymentGateway.message}</p>
+          )}
+          <p className="mt-1 text-xs text-slate-400">
+            Trocar o gateway não afeta cobranças ou saques já criados com o gateway anterior.
+          </p>
+        </div>
+
+        <div>
+          <label className={labelClass}>
             Comissão da plataforma <span className={hintClass}>(% sobre o valor da corrida)</span>
           </label>
           <input
@@ -130,7 +147,7 @@ function ConfiguracoesContent() {
 
         <div>
           <label className={labelClass}>
-            Taxa do gateway Pix <span className={hintClass}>(% cobrado pela Pagar.me, informativo)</span>
+            Taxa do gateway Pix <span className={hintClass}>(% cobrado pelo gateway ativo, informativo)</span>
           </label>
           <input
             type="number"
