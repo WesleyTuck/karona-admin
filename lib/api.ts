@@ -181,15 +181,12 @@ export interface DriverVerification {
   selfieSignedUrl?: string | null;
 }
 
-export type PaymentGatewayProvider = "PAGARME" | "WOOVI";
-
 export interface PlatformFinancialSettings {
   commissionPercent: number;
   pixGatewayFeePercent: number;
   withdrawFee: number;
   minimumWithdrawAmount: number;
   freeWithdrawsPerDay: number;
-  activePaymentGateway: PaymentGatewayProvider;
   updatedAt: string;
   updatedByAdminEmail: string | null;
 }
