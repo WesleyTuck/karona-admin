@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { api, type AdminUserItem, type AdminUsersResponse } from "@/lib/api";
+import { PERMISSION_LABELS } from "@/lib/permissions";
 import {
   Users,
   Loader2,
@@ -11,14 +12,9 @@ import {
   ChevronRight,
   Search,
   Plus,
+  Pencil,
 } from "lucide-react";
 import AccessGuard from "@/components/access-guard";
-
-const PERMISSION_LABELS: Record<string, string> = {
-  MANAGE_USERS: "Usuários",
-  MANAGE_PAYOUTS: "Pagamentos",
-  MANAGE_VERIFICATIONS: "Verificações",
-};
 
 function PermissionBadge({ permission }: { permission: string }) {
   const label = PERMISSION_LABELS[permission] ?? permission;
@@ -126,6 +122,7 @@ function UsuariosContent() {
                   <th className="text-left px-5 py-3 text-slate-500 font-semibold">Administrador</th>
                   <th className="text-left px-5 py-3 text-slate-500 font-semibold">Permissões</th>
                   <th className="text-left px-5 py-3 text-slate-500 font-semibold">Cadastrado em</th>
+                  <th className="px-5 py-3"></th>
                 </tr>
               </thead>
               <tbody>
@@ -150,6 +147,15 @@ function UsuariosContent() {
                       )}
                     </td>
                     <td className="px-5 py-4 text-slate-500">{fmtDate(admin.createdAt)}</td>
+                    <td className="px-5 py-4 text-right">
+                      <Link
+                        href={`/usuarios/${admin.id}`}
+                        className="inline-flex items-center gap-1.5 text-slate-400 hover:text-blue-600 text-xs font-medium transition-colors"
+                      >
+                        <Pencil size={13} />
+                        Editar
+                      </Link>
+                    </td>
                   </tr>
                 ))}
               </tbody>

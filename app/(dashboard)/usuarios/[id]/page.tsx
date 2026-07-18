@@ -1,38 +1,62 @@
 "use client";
 
-import { useState } from "react";
+import { use, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { api, type CreateAdminUserPayload } from "@/lib/api";
+import { api, type AdminUserItem, type UpdateAdminUserPayload } from "@/lib/api";
 import { ADMIN_PERMISSIONS } from "@/lib/permissions";
-import { ArrowLeft, Loader2 } from "lucide-react";
+import { AlertCircle, ArrowLeft, CheckCircle2, Loader2 } from "lucide-react";
 import AccessGuard from "@/components/access-guard";
 
 const schema = z.object({
   name: z.string().min(2, "Nome obrigatório"),
   email: z.string().email("E-mail inválido"),
-  password: z.string().min(6, "Mínimo 6 caracteres"),
+  password: z
+    .string()
+    .optional()
+    .refine((v) => !v || v.length >= 6, "Mínimo 6 caracteres"),
   permissions: z.array(z.string()),
 });
 
 type FormData = z.infer<typeof schema>;
 
-function NovoAdminContent() {
+const inputClass =
+  "w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent";
+const labelClass = "block text-sm font-medium text-slate-700 mb-1";
+const errorClass = "mt-1 text-xs text-red-600";
+
+function EditarAdminContent({ id }: { id: string }) {
   const router = useRouter();
+  const [loadError, setLoadError] = useState("");
   const [serverError, setServerError] = useState("");
+  const [success, setSuccess] = useState(false);
+  const [admin, setAdmin] = useState<AdminUserItem | null>(null);
 
   const {
     register,
     handleSubmit,
     watch,
     setValue,
+    reset,
     formState: { errors, isSubmitting },
   } = useForm<FormData>({
     resolver: zodResolver(schema),
     defaultValues: { permissions: [] },
   });
+
+  useEffect(() => {
+    api
+      .get<AdminUserItem>(`/admin/users/${id}`)
+      .then((data) => {
+        setAdmin(data);
+        reset({ name: data.name, email: data.email, password: "", permissions: data.permissions });
+      })
+      .catch((e: unknown) =>
+        setLoadError(e instanceof Error ? e.message : "Erro ao carregar administrador"),
+      );
+  }, [id, reset]);
 
   const selectedPermissions = watch("permissions");
 
@@ -46,25 +70,44 @@ function NovoAdminContent() {
 
   async function onSubmit(data: FormData) {
     setServerError("");
+    setSuccess(false);
+    const payload: UpdateAdminUserPayload = {
+      name: data.name,
+      email: data.email,
+      permissions: data.permissions,
+      ...(data.password ? { password: data.password } : {}),
+    };
     try {
-      await api.post<{ access_token: string; permissions: string[] }>(
-        "/admin/auth/register",
-        data as CreateAdminUserPayload,
-      );
-      router.push("/usuarios");
+      const updated = await api.patch<AdminUserItem>(`/admin/users/${id}`, payload);
+      setAdmin(updated);
+      reset({ name: updated.name, email: updated.email, password: "", permissions: updated.permissions });
+      setSuccess(true);
     } catch (e: unknown) {
-      setServerError(e instanceof Error ? e.message : "Erro ao cadastrar administrador");
+      setServerError(e instanceof Error ? e.message : "Erro ao atualizar administrador");
     }
   }
 
-  const inputClass =
-    "w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent";
-  const labelClass = "block text-sm font-medium text-slate-700 mb-1";
-  const errorClass = "mt-1 text-xs text-red-600";
+  if (loadError) {
+    return (
+      <div className="p-8">
+        <div className="flex items-center gap-2 bg-red-50 border border-red-200 text-red-700 text-sm px-4 py-3 rounded-lg">
+          <AlertCircle size={16} />
+          {loadError}
+        </div>
+      </div>
+    );
+  }
+
+  if (!admin) {
+    return (
+      <div className="p-8 flex items-center justify-center">
+        <Loader2 size={24} className="animate-spin text-slate-400" />
+      </div>
+    );
+  }
 
   return (
     <div className="p-8 max-w-lg">
-      {/* Header */}
       <div className="flex items-center gap-3 mb-8">
         <button
           onClick={() => router.push("/usuarios")}
@@ -73,34 +116,32 @@ function NovoAdminContent() {
           <ArrowLeft size={18} />
         </button>
         <div>
-          <h1 className="text-2xl font-bold text-slate-800">Novo administrador</h1>
-          <p className="text-slate-500 text-sm mt-0.5">Crie um novo acesso ao painel</p>
+          <h1 className="text-2xl font-bold text-slate-800">Editar administrador</h1>
+          <p className="text-slate-500 text-sm mt-0.5">Atualize os dados e permissões de acesso</p>
         </div>
       </div>
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
-        {/* Nome */}
         <div>
           <label className={labelClass}>Nome completo</label>
           <input type="text" {...register("name")} className={inputClass} placeholder="João da Silva" />
           {errors.name && <p className={errorClass}>{errors.name.message}</p>}
         </div>
 
-        {/* E-mail */}
         <div>
           <label className={labelClass}>E-mail</label>
           <input type="email" {...register("email")} className={inputClass} placeholder="joao@rotafacil.com" />
           {errors.email && <p className={errorClass}>{errors.email.message}</p>}
         </div>
 
-        {/* Senha */}
         <div>
-          <label className={labelClass}>Senha</label>
+          <label className={labelClass}>
+            Nova senha <span className="text-slate-400 font-normal">(opcional — deixe em branco para manter)</span>
+          </label>
           <input type="password" {...register("password")} className={inputClass} placeholder="Mínimo 6 caracteres" />
           {errors.password && <p className={errorClass}>{errors.password.message}</p>}
         </div>
 
-        {/* Permissões */}
         <div>
           <label className="block text-sm font-medium text-slate-700 mb-2">Permissões</label>
           <div className="space-y-2">
@@ -132,8 +173,16 @@ function NovoAdminContent() {
         </div>
 
         {serverError && (
-          <div className="bg-red-50 border border-red-200 text-red-700 text-sm px-3 py-2 rounded-lg">
+          <div className="flex items-center gap-2 bg-red-50 border border-red-200 text-red-700 text-sm px-3 py-2 rounded-lg">
+            <AlertCircle size={15} />
             {serverError}
+          </div>
+        )}
+
+        {success && !serverError && (
+          <div className="flex items-center gap-2 bg-emerald-50 border border-emerald-200 text-emerald-700 text-sm px-3 py-2 rounded-lg">
+            <CheckCircle2 size={15} />
+            Administrador atualizado com sucesso.
           </div>
         )}
 
@@ -143,7 +192,7 @@ function NovoAdminContent() {
             onClick={() => router.push("/usuarios")}
             className="flex-1 px-4 py-2.5 rounded-lg border border-slate-300 text-sm font-medium text-slate-600 hover:bg-slate-50 transition-colors"
           >
-            Cancelar
+            Voltar
           </button>
           <button
             type="submit"
@@ -151,7 +200,7 @@ function NovoAdminContent() {
             className="flex-1 flex items-center justify-center gap-2 bg-blue-600 text-white py-2.5 rounded-lg text-sm font-medium hover:bg-blue-700 disabled:opacity-60 transition-colors"
           >
             {isSubmitting && <Loader2 size={14} className="animate-spin" />}
-            {isSubmitting ? "Cadastrando..." : "Cadastrar"}
+            {isSubmitting ? "Salvando..." : "Salvar alterações"}
           </button>
         </div>
       </form>
@@ -159,10 +208,11 @@ function NovoAdminContent() {
   );
 }
 
-export default function NovoAdminPage() {
+export default function EditarAdminPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = use(params);
   return (
     <AccessGuard permission="MANAGE_USERS">
-      <NovoAdminContent />
+      <EditarAdminContent id={id} />
     </AccessGuard>
   );
 }
