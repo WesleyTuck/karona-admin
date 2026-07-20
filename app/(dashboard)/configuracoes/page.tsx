@@ -14,6 +14,7 @@ const schema = z.object({
   withdrawFee: z.coerce.number().min(0, "Não pode ser negativo"),
   minimumWithdrawAmount: z.coerce.number().min(0, "Não pode ser negativo"),
   freeWithdrawsPerDay: z.coerce.number().int("Deve ser um número inteiro").min(0, "Não pode ser negativo"),
+  wooviMainPixKey: z.string().trim(),
 });
 
 type FormInput = z.input<typeof schema>;
@@ -179,6 +180,23 @@ function ConfiguracoesContent() {
           {errors.freeWithdrawsPerDay && (
             <p className={errorClass}>{errors.freeWithdrawsPerDay.message}</p>
           )}
+        </div>
+
+        <div className="pt-1 border-t border-slate-100">
+          <label className={`${labelClass} mt-4`}>
+            Chave Pix da conta principal (Woovi){" "}
+            <span className={hintClass}>
+              (origem das transferências aos motoristas na conclusão de cada corrida — deixe em
+              branco e os repasses ficam retidos até ser cadastrada)
+            </span>
+          </label>
+          <input
+            type="text"
+            placeholder="ex: financeiro@rotafacil.com.br"
+            {...register("wooviMainPixKey")}
+            className={inputClass}
+          />
+          {errors.wooviMainPixKey && <p className={errorClass}>{errors.wooviMainPixKey.message}</p>}
         </div>
 
         {serverError && (

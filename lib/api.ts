@@ -187,6 +187,7 @@ export interface PlatformFinancialSettings {
   withdrawFee: number;
   minimumWithdrawAmount: number;
   freeWithdrawsPerDay: number;
+  wooviMainPixKey: string;
   updatedAt: string;
   updatedByAdminEmail: string | null;
 }
