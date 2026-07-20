@@ -68,56 +68,9 @@ export const api = {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(body),
     }),
-
-  patchForm: <T>(path: string, form: FormData) =>
-    request<T>(path, { method: "PATCH", body: form }),
 };
 
 // ─── Types ───────────────────────────────────────────────────────────────────
-
-export type PayoutStatus = "PENDING" | "PAID" | "FAILED";
-
-export interface TripSummary {
-  origin: string;
-  destination: string;
-  scheduledAt: string;
-  status: string;
-  payment: { amount: number; type: string; status: string; createdAt: string } | null;
-  passenger: { id: string; name: string; email: string; phone: string } | null;
-}
-
-export interface DriverPayout {
-  id: string;
-  tripId: string;
-  driverId: string;
-  grossAmount: number;
-  feePercent: number;
-  feeAmount: number;
-  netAmount: number;
-  status: PayoutStatus;
-  driverNameSnapshot: string | null;
-  passengerNameSnapshot: string | null;
-  pixKeySnapshot: string | null;
-  pixKeyTypeSnapshot: string | null;
-  originSnapshot: string | null;
-  destinationSnapshot: string | null;
-  paymentConfirmedAt: string | null;
-  paidAt: string | null;
-  receiptUrl: string | null;
-  notes: string | null;
-  createdAt: string;
-  updatedAt: string;
-  trip: TripSummary;
-  paidBy: { id: string; name: string; email: string } | null;
-}
-
-export interface PayoutsResponse {
-  total: number;
-  page: number;
-  limit: number;
-  pages: number;
-  items: DriverPayout[];
-}
 
 export interface AdminUserItem {
   id: string;
