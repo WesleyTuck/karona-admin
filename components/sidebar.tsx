@@ -4,12 +4,13 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { clearToken, getPermissions } from "@/lib/api";
-import { LayoutDashboard, LogOut, MapPin, ShieldCheck, Users, Settings } from "lucide-react";
+import { Car, LayoutDashboard, LogOut, MapPin, ShieldCheck, Users, Settings } from "lucide-react";
 
 const NAV = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard, permission: null },
   { href: "/verificacoes", label: "Verificações", icon: ShieldCheck, permission: "MANAGE_VERIFICATIONS" },
   { href: "/usuarios", label: "Usuários", icon: Users, permission: "MANAGE_USERS" },
+  { href: "/sob-demanda", label: "Sob demanda", icon: Car, permission: "MANAGE_SETTINGS" },
   { href: "/configuracoes", label: "Configurações", icon: Settings, permission: "MANAGE_SETTINGS" },
 ];
 

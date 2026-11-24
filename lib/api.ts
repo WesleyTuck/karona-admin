@@ -149,3 +149,24 @@ export type UpdateFinancialSettingsPayload = Omit<
   PlatformFinancialSettings,
   "updatedAt" | "updatedByAdminEmail"
 >;
+
+/** Parâmetros da viagem sob demanda (estilo Uber). */
+export interface OnDemandSettings {
+  enabled: boolean;
+  baseFare: number;
+  pricePerKm: number;
+  pricePerMinute: number;
+  minimumFare: number;
+  radiusKm: number;
+  offerTimeoutSeconds: number;
+  searchTimeoutSeconds: number;
+  scheduledBufferMinutes: number;
+  presenceTtlSeconds: number;
+  updatedAt: string | null;
+  updatedByAdminEmail: string | null;
+}
+
+export type UpdateOnDemandSettingsPayload = Omit<
+  OnDemandSettings,
+  "updatedAt" | "updatedByAdminEmail"
+>;
