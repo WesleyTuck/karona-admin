@@ -141,8 +141,6 @@ export interface PlatformFinancialSettings {
   minimumWithdrawAmount: number;
   /** Saque especial: a partir deste saldo disponível o motorista saca sem pagar a taxa. */
   specialWithdrawMinimum: number;
-  freeWithdrawsPerDay: number;
-  wooviMainPixKey: string;
   updatedAt: string;
   updatedByAdminEmail: string | null;
 }
