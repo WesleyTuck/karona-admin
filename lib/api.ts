@@ -166,6 +166,65 @@ export interface OnDemandSettings {
   updatedByAdminEmail: string | null;
 }
 
+/** Recebedores da AppMax (motoristas que recebem split): GET /admin/recipients. */
+export type RecipientStatusKey =
+  | "AWAITING_FACEMATCH"
+  | "ON_VERIFICATION"
+  | "COMPLETED"
+  | "UNKNOWN";
+
+export interface AdminRecipientRow {
+  recipientHash: string;
+  status: RecipientStatusKey;
+  statusLabel: string;
+  appmaxStatus: string | null;
+  name: string | null;
+  email: string | null;
+  phone: string | null;
+  /** Mascarado: só os 4 últimos dígitos. */
+  document: string | null;
+  companyName: string | null;
+  /** "YYYY-MM-DD HH:MM:SS" (horário da AppMax) */
+  createdAt: string | null;
+  inAppmax: boolean;
+  driver: {
+    id: string;
+    userId: string;
+    name: string;
+    email: string;
+    personType: string;
+    autoWithdraw: boolean;
+  } | null;
+  /** Em reais; null = ainda não aprovado (sem saldo na AppMax). */
+  balance: { available: number; toRelease: number } | null;
+  balanceError: string | null;
+  payouts: {
+    pendingCount: number;
+    pendingAmount: number;
+    failedCount: number;
+    failedAmount: number;
+    paidAmount: number;
+  };
+}
+
+export interface AdminRecipientsOverview {
+  generatedAt: string;
+  cached: boolean;
+  totals: {
+    recipients: number;
+    byStatus: Record<RecipientStatusKey, number>;
+    available: number;
+    toRelease: number;
+    withAvailable: number;
+    withToRelease: number;
+    pendingPayoutsAmount: number;
+    pendingPayoutsCount: number;
+    failedPayoutsAmount: number;
+    failedPayoutsCount: number;
+  };
+  recipients: AdminRecipientRow[];
+}
+
 export type UpdateOnDemandSettingsPayload = Omit<
   OnDemandSettings,
   "updatedAt" | "updatedByAdminEmail"
