@@ -139,6 +139,8 @@ export interface PlatformFinancialSettings {
   pixGatewayFeePercent: number;
   withdrawFee: number;
   minimumWithdrawAmount: number;
+  /** Saque especial: a partir deste saldo disponível o motorista saca sem pagar a taxa. */
+  specialWithdrawMinimum: number;
   freeWithdrawsPerDay: number;
   wooviMainPixKey: string;
   updatedAt: string;
@@ -223,6 +225,31 @@ export interface AdminRecipientsOverview {
     failedPayoutsCount: number;
   };
   recipients: AdminRecipientRow[];
+}
+
+/** Saques dos motoristas na AppMax: GET /admin/recipients/withdrawals. */
+export interface AdminWithdrawalRow {
+  id: string;
+  type: "REGULAR" | "SPECIAL";
+  driver: { id: string; name: string; email: string };
+  amount: number;
+  status: string | null;
+  net: number | null;
+  fee: number;
+  feeToReimburse: number;
+  reimbursedAt: string | null;
+  createdAt: string;
+}
+
+export interface AdminWithdrawalsOverview {
+  totals: {
+    count: number;
+    specialCount: number;
+    feeToReimburseAmount: number;
+    feeToReimburseCount: number;
+    reimbursedAmount: number;
+  };
+  withdrawals: AdminWithdrawalRow[];
 }
 
 export type UpdateOnDemandSettingsPayload = Omit<

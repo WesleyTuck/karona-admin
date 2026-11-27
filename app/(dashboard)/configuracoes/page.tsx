@@ -13,8 +13,12 @@ const schema = z.object({
   pixGatewayFeePercent: z.coerce.number().min(0, "Mínimo 0%").max(100, "Máximo 100%"),
   withdrawFee: z.coerce.number().min(0, "Não pode ser negativo"),
   minimumWithdrawAmount: z.coerce.number().min(0, "Não pode ser negativo"),
+  specialWithdrawMinimum: z.coerce.number().min(0, "Não pode ser negativo"),
   freeWithdrawsPerDay: z.coerce.number().int("Deve ser um número inteiro").min(0, "Não pode ser negativo"),
   wooviMainPixKey: z.string().trim(),
+}).refine((v) => v.specialWithdrawMinimum >= v.minimumWithdrawAmount, {
+  path: ["specialWithdrawMinimum"],
+  message: "Não pode ser menor que o valor mínimo de saque",
 });
 
 type FormInput = z.input<typeof schema>;
@@ -154,7 +158,7 @@ function ConfiguracoesContent() {
 
         <div>
           <label className={labelClass}>
-            Valor mínimo de saque <span className={hintClass}>(R$)</span>
+            Valor mínimo de saque <span className={hintClass}>(R$ — saque comum: o motorista paga a taxa da AppMax)</span>
           </label>
           <input
             type="number"
@@ -164,6 +168,25 @@ function ConfiguracoesContent() {
           />
           {errors.minimumWithdrawAmount && (
             <p className={errorClass}>{errors.minimumWithdrawAmount.message}</p>
+          )}
+        </div>
+
+        <div>
+          <label className={labelClass}>
+            Limite mínimo saque especial{" "}
+            <span className={hintClass}>
+              (R$ — com saldo disponível a partir deste valor o motorista saca sem pagar a taxa; o
+              Karona absorve)
+            </span>
+          </label>
+          <input
+            type="number"
+            step="0.01"
+            {...register("specialWithdrawMinimum")}
+            className={inputClass}
+          />
+          {errors.specialWithdrawMinimum && (
+            <p className={errorClass}>{errors.specialWithdrawMinimum.message}</p>
           )}
         </div>
 

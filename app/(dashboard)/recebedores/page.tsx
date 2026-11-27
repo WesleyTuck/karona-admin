@@ -5,11 +5,13 @@ import {
   api,
   type AdminRecipientRow,
   type AdminRecipientsOverview,
+  type AdminWithdrawalsOverview,
   type RecipientStatusKey,
 } from "@/lib/api";
 import {
   AlertCircle,
   BadgeCheck,
+  Banknote,
   Clock,
   Hourglass,
   Loader2,
@@ -79,6 +81,171 @@ function SummaryCard({
       <p className="mt-3 text-2xl font-bold text-slate-800">{value}</p>
       {hint && <p className="mt-1 text-xs text-slate-400">{hint}</p>}
     </div>
+  );
+}
+
+const WITHDRAW_STATUS: Record<string, string> = {
+  pending: "Em processamento",
+  paid: "Pago",
+  refused: "Recusado",
+  canceled: "Cancelado",
+  cancelled: "Cancelado",
+  failed: "Falhou",
+};
+
+/**
+ * Saques feitos pelos motoristas. No saque ESPECIAL a taxa da AppMax é do Karona:
+ * o que ela descontou do motorista aparece como "a ressarcir" até ser marcado.
+ */
+function WithdrawalsSection() {
+  const [data, setData] = useState<AdminWithdrawalsOverview | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [busyId, setBusyId] = useState<string | null>(null);
+
+  const load = useCallback(async () => {
+    try {
+      setData(await api.get<AdminWithdrawalsOverview>("/admin/recipients/withdrawals"));
+      setError(null);
+    } catch (e: unknown) {
+      setError(e instanceof Error ? e.message : "Erro ao carregar os saques");
+    }
+  }, []);
+
+  useEffect(() => {
+    let alive = true;
+    api
+      .get<AdminWithdrawalsOverview>("/admin/recipients/withdrawals")
+      .then((res) => alive && setData(res))
+      .catch(
+        (e: unknown) =>
+          alive && setError(e instanceof Error ? e.message : "Erro ao carregar os saques"),
+      );
+    return () => {
+      alive = false;
+    };
+  }, []);
+
+  async function reimburse(id: string) {
+    setBusyId(id);
+    try {
+      await api.post(`/admin/recipients/withdrawals/${id}/reimburse`, {});
+      await load();
+    } catch (e: unknown) {
+      setError(e instanceof Error ? e.message : "Erro ao marcar como ressarcido");
+    } finally {
+      setBusyId(null);
+    }
+  }
+
+  return (
+    <section className="mt-10">
+      <h2 className="text-lg font-semibold text-slate-800 mb-1">Saques dos motoristas</h2>
+      <p className="text-sm text-slate-500 mb-4">
+        Saque comum: o motorista paga a taxa da AppMax. Saque especial: a taxa é do Karona — o que
+        a AppMax descontar do motorista fica “a ressarcir” até você marcar como devolvido.
+      </p>
+
+      {error && (
+        <div className="mb-4 flex items-center gap-2 rounded-lg bg-red-50 p-3 text-sm text-red-700">
+          <AlertCircle size={16} /> {error}
+        </div>
+      )}
+
+      {data && (
+        <>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-5">
+            <SummaryCard
+              icon={Banknote}
+              tone="amber"
+              label="Taxas a ressarcir"
+              value={brl(data.totals.feeToReimburseAmount)}
+              hint={`${data.totals.feeToReimburseCount} saque(s) especial(is) com taxa descontada`}
+            />
+            <SummaryCard
+              icon={BadgeCheck}
+              tone="emerald"
+              label="Taxas já ressarcidas"
+              value={brl(data.totals.reimbursedAmount)}
+            />
+            <SummaryCard
+              icon={Wallet}
+              label="Saques registrados"
+              value={String(data.totals.count)}
+              hint={`${data.totals.specialCount} especial(is)`}
+            />
+          </div>
+
+          {data.withdrawals.length === 0 ? (
+            <p className="text-sm text-slate-400">Nenhum saque feito pelo aplicativo ainda.</p>
+          ) : (
+            <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead className="bg-slate-50 text-left text-xs uppercase text-slate-500">
+                  <tr>
+                    <th className="px-4 py-3">Data</th>
+                    <th className="px-4 py-3">Motorista</th>
+                    <th className="px-4 py-3">Tipo</th>
+                    <th className="px-4 py-3 text-right">Valor</th>
+                    <th className="px-4 py-3 text-right">Líquido</th>
+                    <th className="px-4 py-3 text-right">Taxa AppMax</th>
+                    <th className="px-4 py-3">Status</th>
+                    <th className="px-4 py-3 text-right">A ressarcir</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100">
+                  {data.withdrawals.map((w) => (
+                    <tr key={w.id}>
+                      <td className="px-4 py-3 whitespace-nowrap">{fmtDateTime(w.createdAt)}</td>
+                      <td className="px-4 py-3">
+                        <div className="font-medium text-slate-800">{w.driver.name}</div>
+                        <div className="text-xs text-slate-400">{w.driver.email}</div>
+                      </td>
+                      <td className="px-4 py-3">
+                        <span
+                          className={`rounded-full px-2 py-0.5 text-xs font-medium ${
+                            w.type === "SPECIAL"
+                              ? "bg-purple-100 text-purple-700"
+                              : "bg-slate-100 text-slate-600"
+                          }`}
+                        >
+                          {w.type === "SPECIAL" ? "Especial" : "Comum"}
+                        </span>
+                      </td>
+                      <td className="px-4 py-3 text-right">{brl(w.amount)}</td>
+                      <td className="px-4 py-3 text-right">{w.net == null ? "—" : brl(w.net)}</td>
+                      <td className="px-4 py-3 text-right">{brl(w.fee)}</td>
+                      <td className="px-4 py-3">
+                        {WITHDRAW_STATUS[w.status ?? ""] ?? w.status ?? "—"}
+                      </td>
+                      <td className="px-4 py-3 text-right">
+                        {w.feeToReimburse > 0 ? (
+                          <div className="flex items-center justify-end gap-2">
+                            <span className="font-medium text-amber-700">
+                              {brl(w.feeToReimburse)}
+                            </span>
+                            <button
+                              onClick={() => reimburse(w.id)}
+                              disabled={busyId === w.id}
+                              className="rounded-lg border border-slate-300 px-2 py-1 text-xs text-slate-600 hover:bg-slate-50 disabled:opacity-50"
+                            >
+                              {busyId === w.id ? "Salvando..." : "Marcar ressarcido"}
+                            </button>
+                          </div>
+                        ) : w.reimbursedAt ? (
+                          <span className="text-xs text-emerald-600">Ressarcido</span>
+                        ) : (
+                          "—"
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </>
+      )}
+    </section>
   );
 }
 
@@ -403,6 +570,8 @@ function RecipientsContent() {
             Karona ainda deve ao motorista pelos pagamentos feitos na AppMax, e nada tem a ver
             com o saldo que já está na conta dele lá.
           </p>
+
+          <WithdrawalsSection />
         </>
       )}
     </div>
